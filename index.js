@@ -66,7 +66,7 @@ async function run() {
             res.send({ result, token });
         })
 
-        // Get single user information
+        // Get single user
         app.get('/user/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
             const filter = { email: email };
