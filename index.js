@@ -37,6 +37,11 @@ async function run() {
         const productCollection = client.db('NEXIQ').collection('products');
         const userCollection = client.db('NEXIQ').collection('users');
         const orderCollection = client.db('NEXIQ').collection('orders');
+        const reviewCollection = client.db('NEXIQ').collection('reviews');
+
+        // =========================
+        //      product section
+        // =========================
 
         // Fiend All Products
         app.get('/product', async (req, res) => {
@@ -52,6 +57,10 @@ async function run() {
             const product = await productCollection.findOne(query);
             res.send(product);
         })
+
+        //=========================
+        //      user section
+        //=========================
 
         // update user information
         app.put('/user/:email', async (req, res) => {
@@ -75,7 +84,11 @@ async function run() {
             res.send(user);
         })
 
-        // Post a booking 
+        //=======================
+        //     order section
+        //=======================
+
+        // Post a order
         app.post('/order', verifyJWT, async (req, res) => {
             const order = req.body;
             const result = await orderCollection.insertOne(order);
@@ -98,6 +111,25 @@ async function run() {
             const result = await orderCollection.deleteOne(query);
             res.send(result);
         })
+
+        //=======================
+        //     reviews section
+        //=======================
+
+        // get all reviews
+        app.get('/review', async (req, res) => {
+            const query = {};
+            const reviews = await reviewCollection.find(query).toArray();
+            res.send(reviews);
+        })
+
+        // post new review
+        app.post('/review', verifyJWT, async (req, res) => {
+            const review = req.body;
+            const result = await reviewCollection.insertOne(review);
+            res.send(result);
+        })
+
 
     }
     finally {
