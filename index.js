@@ -36,6 +36,7 @@ async function run() {
         await client.connect()
         const productCollection = client.db('NEXIQ').collection('products');
         const userCollection = client.db('NEXIQ').collection('users');
+        const orderCollection = client.db('NEXIQ').collection('orders');
 
         // Fiend All Products
         app.get('/product', async (req, res) => {
@@ -62,7 +63,7 @@ async function run() {
                 $set: user,
             }
             const result = await userCollection.updateOne(filter, updateDoc, options);
-            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '5h' })
+            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' })
             res.send({ result, token });
         })
 
@@ -72,6 +73,30 @@ async function run() {
             const filter = { email: email };
             const user = await userCollection.findOne(filter);
             res.send(user);
+        })
+
+        // Post a booking 
+        app.post('/order', verifyJWT, async (req, res) => {
+            const order = req.body;
+            const result = await orderCollection.insertOne(order);
+            res.send(result);
+        })
+
+        // Get user ordered product
+        app.get('/order/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email };
+            const result = await orderCollection.find(query).toArray();
+            res.send(result);
+        })
+
+        // Delete Order
+
+        app.delete("/order/email/:id", verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await orderCollection.deleteOne(query);
+            res.send(result);
         })
 
     }
