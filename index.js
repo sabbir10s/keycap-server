@@ -4,6 +4,8 @@ const cors = require('cors');
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -38,10 +40,49 @@ async function run() {
         const userCollection = client.db('NEXIQ').collection('users');
         const orderCollection = client.db('NEXIQ').collection('orders');
         const reviewCollection = client.db('NEXIQ').collection('reviews');
+        const paymentCollection = client.db('NEXIQ').collection('payments');
+
+        //========================
+        // Payment Section
+        //======================== 
+
+        app.post('/create-payment-intent', verifyJWT, async (req, res) => {
+            const order = req.body;
+            const price = order.totalPrice;
+            const amount = price * 100;
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: 'usd',
+                payment_method_types: ['card']
+            });
+            res.send({ clientSecret: paymentIntent.client_secret })
+        })
+
+        //Store Payment information 
+        app.patch('/order/email/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const payment = req.body;
+            const filter = { _id: ObjectId(id) }
+            const updateDoc = {
+                $set: {
+                    paid: true,
+                    transactionId: payment.transactionId
+                },
+            }
+            const result = await paymentCollection.insertOne(payment)
+            const updatedOrder = await orderCollection.updateOne(filter, updateDoc);
+            res.send(updateDoc)
+
+        })
+
+
+
 
         // =========================
         //      product section
         // =========================
+
+
 
         // Fiend All Products
         app.get('/product', async (req, res) => {
@@ -96,12 +137,13 @@ async function run() {
         })
 
         // Get user ordered product
-        app.get('/order/:email', verifyJWT, async (req, res) => {
+        app.get('/order/:email', async (req, res) => {
             const email = req.params.email;
             const query = { email: email };
             const result = await orderCollection.find(query).toArray();
             res.send(result);
         })
+
 
         // Delete Order
 
@@ -109,6 +151,16 @@ async function run() {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const result = await orderCollection.deleteOne(query);
+            res.send(result);
+        })
+
+        // get one order bye id 
+        app.get('/order/email/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+
+            const result = await orderCollection.findOne(query);
+            console.log(result);
             res.send(result);
         })
 
@@ -129,6 +181,10 @@ async function run() {
             const result = await reviewCollection.insertOne(review);
             res.send(result);
         })
+
+
+
+
 
 
     }
