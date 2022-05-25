@@ -76,13 +76,9 @@ async function run() {
         })
 
 
-
-
         // =========================
         //      product section
         // =========================
-
-
 
         // Fiend All Products
         app.get('/product', async (req, res) => {
@@ -117,6 +113,12 @@ async function run() {
             res.send({ result, token });
         })
 
+        // Get All users 
+        app.get('/user', verifyJWT, async (req, res) => {
+            const users = await userCollection.find().toArray();
+            res.send(users);
+        })
+
         // Get single user
         app.get('/user/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
@@ -124,6 +126,39 @@ async function run() {
             const user = await userCollection.findOne(filter);
             res.send(user);
         })
+
+
+
+        // Make an admin
+        app.put('/user/admin/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email;
+            const requester = req.decoded.email;
+            const requestAccount = await userCollection.findOne({ email: requester });
+
+            if (requestAccount.role === 'admin') {
+                const filter = { email: email };
+                const updateDoc = {
+                    $set: { role: 'admin' },
+                }
+                const result = await userCollection.updateOne(filter, updateDoc);
+                res.send(result);
+            }
+            else {
+                res.send(403).send({ message: 'forbidden access' });
+            }
+
+        })
+
+
+        // check user admin or not
+        app.get('/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = await userCollection.findOne({ email: email });
+            const isAdmin = user.role === 'admin';
+            res.send({ admin: isAdmin });
+        })
+
+
 
         //=======================
         //     order section
@@ -137,7 +172,7 @@ async function run() {
         })
 
         // Get user ordered product
-        app.get('/order/:email', async (req, res) => {
+        app.get('/order/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
             const query = { email: email };
             const result = await orderCollection.find(query).toArray();
@@ -181,8 +216,6 @@ async function run() {
             const result = await reviewCollection.insertOne(review);
             res.send(result);
         })
-
-
 
 
 
