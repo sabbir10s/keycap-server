@@ -42,6 +42,18 @@ async function run() {
         const reviewCollection = client.db('NEXIQ').collection('reviews');
         const paymentCollection = client.db('NEXIQ').collection('payments');
 
+        const verifyAdmin = async (req, res, next) => {
+            const requester = req.decoded.email;
+            const requestAccount = await userCollection.findOne({ email: requester });
+
+            if (requestAccount.role === 'admin') {
+                next();
+            }
+            else {
+                res.send(403).send({ message: 'forbidden access' });
+            }
+        }
+
         //========================
         // Payment Section
         //======================== 
@@ -95,6 +107,23 @@ async function run() {
             res.send(product);
         })
 
+        // Add new product product
+        app.post('/product', verifyJWT, verifyAdmin, async (req, res) => {
+            const product = req.body;
+            const result = await productCollection.insertOne(product);
+            res.send(result);
+        })
+
+        // Delete Product
+        app.delete('/product/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await productCollection.deleteOne(query);
+            res.send(result);
+        })
+
+
+
         //=========================
         //      user section
         //=========================
@@ -130,23 +159,14 @@ async function run() {
 
 
         // Make an admin
-        app.put('/user/admin/:email', verifyJWT, async (req, res) => {
+        app.put('/user/admin/:email', verifyJWT, verifyAdmin, async (req, res) => {
             const email = req.params.email;
-            const requester = req.decoded.email;
-            const requestAccount = await userCollection.findOne({ email: requester });
-
-            if (requestAccount.role === 'admin') {
-                const filter = { email: email };
-                const updateDoc = {
-                    $set: { role: 'admin' },
-                }
-                const result = await userCollection.updateOne(filter, updateDoc);
-                res.send(result);
+            const filter = { email: email };
+            const updateDoc = {
+                $set: { role: 'admin' },
             }
-            else {
-                res.send(403).send({ message: 'forbidden access' });
-            }
-
+            const result = await userCollection.updateOne(filter, updateDoc);
+            res.send(result);
         })
 
 
@@ -157,6 +177,16 @@ async function run() {
             const isAdmin = user.role === 'admin';
             res.send({ admin: isAdmin });
         })
+
+
+        // Delete Delete User
+        app.delete('/user/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await userCollection.deleteOne(query);
+            res.send(result);
+        })
+
 
 
 
