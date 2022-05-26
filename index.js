@@ -54,38 +54,6 @@ async function run() {
             }
         }
 
-        //========================
-        // Payment Section
-        //======================== 
-
-        app.post('/create-payment-intent', verifyJWT, async (req, res) => {
-            const order = req.body;
-            const price = order.totalPrice;
-            const amount = price * 100;
-            const paymentIntent = await stripe.paymentIntents.create({
-                amount: amount,
-                currency: 'usd',
-                payment_method_types: ['card']
-            });
-            res.send({ clientSecret: paymentIntent.client_secret })
-        })
-
-        //Store Payment information 
-        app.patch('/order/email/:id', verifyJWT, async (req, res) => {
-            const id = req.params.id;
-            const payment = req.body;
-            const filter = { _id: ObjectId(id) }
-            const updateDoc = {
-                $set: {
-                    paid: true,
-                    transactionId: payment.transactionId
-                },
-            }
-            const result = await paymentCollection.insertOne(payment)
-            const updatedOrder = await orderCollection.updateOne(filter, updateDoc);
-            res.send(updateDoc)
-
-        })
 
 
         // =========================
@@ -245,6 +213,41 @@ async function run() {
             const review = req.body;
             const result = await reviewCollection.insertOne(review);
             res.send(result);
+        })
+
+
+
+        //========================
+        // Payment Section
+        //======================== 
+
+        app.post('/create-payment-intent', verifyJWT, async (req, res) => {
+            const order = req.body;
+            const price = order.totalPrice;
+            const amount = price * 100;
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: 'usd',
+                payment_method_types: ['card']
+            });
+            res.send({ clientSecret: paymentIntent.client_secret })
+        })
+
+        //Store Payment information 
+        app.patch('/order/email/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const payment = req.body;
+            const filter = { _id: ObjectId(id) }
+            const updateDoc = {
+                $set: {
+                    paid: true,
+                    transactionId: payment.transactionId
+                },
+            }
+            const result = await paymentCollection.insertOne(payment)
+            const updatedOrder = await orderCollection.updateOne(filter, updateDoc);
+            res.send(updateDoc)
+
         })
 
 
