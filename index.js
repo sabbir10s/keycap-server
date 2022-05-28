@@ -147,7 +147,7 @@ async function run() {
         })
 
 
-        // Delete Delete User
+        // Delete User
         app.delete('/user/:id', verifyJWT, verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
@@ -162,11 +162,39 @@ async function run() {
         //     order section
         //=======================
 
-        // Post a order
-        app.post('/order', verifyJWT, async (req, res) => {
+        // Post a order (Admin)
+        app.post('/order', verifyJWT, verifyAdmin, async (req, res) => {
             const order = req.body;
             const result = await orderCollection.insertOne(order);
             res.send(result);
+        })
+
+        // Get All Order (Admin) 
+        app.get('/order', verifyJWT, verifyAdmin, async (req, res) => {
+            const query = {};
+            const result = await orderCollection.find(query).toArray();
+            res.send(result);
+        })
+
+        // Delete Order (Admin) 
+        app.delete("/order/:id", verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await orderCollection.deleteOne(query);
+            res.send(result);
+        })
+
+        // Update user oder status (Admin)
+        app.put('/order/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    status: "delivered"
+                }
+            }
+            const result = await orderCollection.updateOne(query, updateDoc);
+            res.send(result)
         })
 
         // Get user ordered product
@@ -178,8 +206,7 @@ async function run() {
         })
 
 
-        // Delete Order
-
+        // Delete Order (For User) 
         app.delete("/order/email/:id", verifyJWT, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
@@ -223,7 +250,7 @@ async function run() {
 
         app.post('/create-payment-intent', verifyJWT, async (req, res) => {
             const order = req.body;
-            const price = order.totalPrice;
+            const price = parseInt(order.totalPrice);
             const amount = price * 100;
             const paymentIntent = await stripe.paymentIntents.create({
                 amount: amount,
@@ -241,6 +268,7 @@ async function run() {
             const updateDoc = {
                 $set: {
                     paid: true,
+                    status: 'pending',
                     transactionId: payment.transactionId
                 },
             }
