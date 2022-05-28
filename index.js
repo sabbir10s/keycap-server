@@ -294,5 +294,5 @@ app.get('/', (req, res) => {
 })
 
 app.listen(port, () => {
-    console.log("CRUD server is running");
+    console.log("Nexiq server is running");
 })
