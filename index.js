@@ -34,6 +34,7 @@ function verifyJWT(req, res, next) {
 
 
 async function run() {
+
     try {
         await client.connect()
         const productCollection = client.db('NEXIQ').collection('products');
@@ -163,7 +164,7 @@ async function run() {
         //=======================
 
         // Post a order (Admin)
-        app.post('/order', verifyJWT, verifyAdmin, async (req, res) => {
+        app.post('/order', verifyJWT, async (req, res) => {
             const order = req.body;
             const result = await orderCollection.insertOne(order);
             res.send(result);
