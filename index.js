@@ -245,9 +245,9 @@ async function run() {
 
 
 
-        //========================
+        //==========================
         // Payment Section
-        //======================== 
+        //==========================
 
         app.post('/create-payment-intent', verifyJWT, async (req, res) => {
             const order = req.body;
