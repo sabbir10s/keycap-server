@@ -98,7 +98,7 @@ async function run() {
         //=========================
 
         // update user information
-        app.put('/user/:email', async (req, res) => {
+        app.put('/user/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
             const user = req.body;
             const filter = { email: email };
@@ -112,7 +112,7 @@ async function run() {
         })
 
         // Get All users 
-        app.get('/user', verifyJWT, async (req, res) => {
+        app.get('/user', verifyJWT, verifyAdmin, async (req, res) => {
             const users = await userCollection.find().toArray();
             res.send(users);
         })
@@ -127,7 +127,7 @@ async function run() {
 
 
 
-        // Make an admin
+        // Make an admin (admin)
         app.put('/user/admin/:email', verifyJWT, verifyAdmin, async (req, res) => {
             const email = req.params.email;
             const filter = { email: email };
@@ -139,8 +139,8 @@ async function run() {
         })
 
 
-        // check user admin or not
-        app.get('/admin/:email', async (req, res) => {
+        // check user admin or not 
+        app.get('/admin/:email', verifyJWT, verifyAdmin, async (req, res) => {
             const email = req.params.email;
             const user = await userCollection.findOne({ email: email });
             const isAdmin = user.role === 'admin';
@@ -215,7 +215,7 @@ async function run() {
             res.send(result);
         })
 
-        // get one order bye id 
+        // get one order by id 
         app.get('/order/email/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
