@@ -139,7 +139,7 @@ async function run() {
         })
 
 
-        // check user admin or not 
+        // check user admin or not (all)
         app.get('/admin/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
             const user = await userCollection.findOne({ email: email });
@@ -148,7 +148,7 @@ async function run() {
         })
 
 
-        // Delete User
+        // Delete User(admin)
         app.delete('/user/:id', verifyJWT, verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
@@ -232,7 +232,7 @@ async function run() {
         // get all reviews
         app.get('/review', async (req, res) => {
             const query = {};
-            const reviews = await reviewCollection.find(query).toArray();
+            const reviews = await reviewCollection.find(query).toArray().revers();
             res.send(reviews);
         })
 
