@@ -232,10 +232,9 @@ async function run() {
         // get all reviews
         app.get('/review', async (req, res) => {
             const query = {};
-            const reviews = await reviewCollection.find(query).toArray().revers();
+            const reviews = await (await reviewCollection.find(query).toArray()).reverse()
             res.send(reviews);
         })
-
 
         // post new review
         app.post('/review', verifyJWT, async (req, res) => {
