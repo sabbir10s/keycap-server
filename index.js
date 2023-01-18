@@ -36,7 +36,7 @@ function verifyJWT(req, res, next) {
 async function run() {
 
     try {
-        await client.connect()
+        client.connect()
         const productCollection = client.db('NEXIQ').collection('products');
         const userCollection = client.db('NEXIQ').collection('users');
         const orderCollection = client.db('NEXIQ').collection('orders');
