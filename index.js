@@ -186,12 +186,13 @@ async function run() {
         })
 
         // Update user oder status (Admin)
-        app.put('/order/:id', verifyJWT, verifyAdmin, async (req, res) => {
+        app.put('/order/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
+            const value = req.body.status
             const updateDoc = {
                 $set: {
-                    status: "delivered"
+                    status: value
                 }
             }
             const result = await orderCollection.updateOne(query, updateDoc);
