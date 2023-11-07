@@ -177,6 +177,14 @@ async function run() {
             res.send(result);
         })
 
+        //Get single product(Admin)
+        app.get('/order/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) };
+            const product = await orderCollection.findOne(query);
+            res.send(product);
+        })
+
         // Delete Order (Admin) 
         app.delete("/order/:id", verifyJWT, verifyAdmin, async (req, res) => {
             const id = req.params.id;
