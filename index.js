@@ -208,8 +208,8 @@ async function run() {
         app.get('/order/:id', verifyJWT, verifyAdmin, async (req, res) => {
             const id = req.params.id
             const query = { _id: ObjectId(id) };
-            const order = await orderCollection.findOne(query);
-            res.send(order);
+            const orders = await orderCollection.findOne(query);
+            res.send(orders);
         })
 
         // Delete Order (Admin) 
