@@ -160,68 +160,64 @@ async function run() {
 
 
         //=======================
-        //     order section
+        //   order section (user)
         //=======================
 
         // Post a order (User)
-        app.post('/order', verifyJWT, async (req, res) => {
+        app.post('/user/order', verifyJWT, async (req, res) => {
             const order = req.body;
             const result = await orderCollection.insertOne(order);
             res.send(result);
         })
 
-        // Get user ordered product (user)
-        app.get('/order/:email', verifyJWT, async (req, res) => {
+        // Get user ordered product by email (user)
+        app.get('/user/order/:email', async (req, res) => {
             const email = req.params.email;
+            console.log(email);
             const query = { email: email };
             const result = await orderCollection.find(query).toArray();
             res.send(result);
         })
 
+        // get single order by id (User)
+        // app.get('/order/email/:id', verifyJWT, async (req, res) => {
+        //     const id = req.params.id;
+        //     const query = { _id: ObjectId(id) };
+        //     const result = await orderCollection.findOne(query);
+        //     console.log(result);
+        //     res.send(result);
+        // })
 
         // Delete Order (User) 
-        app.delete("/order/email/:id", verifyJWT, async (req, res) => {
+        app.delete("user/order/email/:id", verifyJWT, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const result = await orderCollection.deleteOne(query);
             res.send(result);
         })
 
-        // get single order by id (User)
-        app.get('/order/email/:id', verifyJWT, async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: ObjectId(id) };
 
-            const result = await orderCollection.findOne(query);
-            console.log(result);
-            res.send(result);
-        })
+        //=======================
+        // order section (admin)
+        //=======================
 
         // Get All Order (Admin) 
-        app.get('/order', verifyJWT, verifyAdmin, async (req, res) => {
+        app.get('/admin/order', verifyJWT, verifyAdmin, async (req, res) => {
             const query = {};
             const result = await orderCollection.find(query).toArray();
             res.send(result);
         })
 
-        //Get single order(Admin)
-        app.get('/order/:id', verifyJWT, verifyAdmin, async (req, res) => {
+        //Get single order by id (Admin)
+        app.get('/admin/order/:id', async (req, res) => {
             const id = req.params.id
             const query = { _id: ObjectId(id) };
-            const orders = await orderCollection.findOne(query);
-            res.send(orders);
-        })
-
-        // Delete Order (Admin) 
-        app.delete("/order/:id", verifyJWT, verifyAdmin, async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: ObjectId(id) };
-            const result = await orderCollection.deleteOne(query);
+            const result = await orderCollection.findOne(query);
             res.send(result);
         })
 
         // Update user oder status (Admin)
-        app.put('/order/:id', async (req, res) => {
+        app.put('/admin/order/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const value = req.body.status
@@ -234,6 +230,13 @@ async function run() {
             res.send(result)
         })
 
+        // Delete Order (Admin) 
+        app.delete("/admin/order/:id", verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await orderCollection.deleteOne(query);
+            res.send(result);
+        })
 
 
         //=======================
