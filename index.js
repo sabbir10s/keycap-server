@@ -171,7 +171,7 @@ async function run() {
         })
 
         // Get user ordered product by email (user)
-        app.get('/user/order/:email', async (req, res) => {
+        app.get('/user/order/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
             console.log(email);
             const query = { email: email };
@@ -209,7 +209,7 @@ async function run() {
         })
 
         //Get single order by id (Admin)
-        app.get('/admin/order/:id', async (req, res) => {
+        app.get('/admin/order/:id', verifyJWT, verifyAdmin, async (req, res) => {
             const id = req.params.id
             const query = { _id: ObjectId(id) };
             const result = await orderCollection.findOne(query);
@@ -217,7 +217,7 @@ async function run() {
         })
 
         // Update user oder status (Admin)
-        app.put('/admin/order/:id', async (req, res) => {
+        app.put('/admin/order/:id', verifyJWT, verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const value = req.body.status
