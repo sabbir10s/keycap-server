@@ -97,7 +97,7 @@ async function run() {
         //      user section
         //=========================
 
-        // update user information
+        // update user information (admin)
         app.put('/user/:email', async (req, res) => {
             const email = req.params.email;
             const user = req.body;
@@ -111,13 +111,13 @@ async function run() {
             res.send({ result, token });
         })
 
-        // Get All users 
+        // Get All users (admin)
         app.get('/user', verifyJWT, verifyAdmin, async (req, res) => {
             const users = await userCollection.find().toArray();
             res.send(users);
         })
 
-        // Get single user
+        // Get single user by email
         app.get('/user/:email', async (req, res) => {
             const email = req.params.email;
             const filter = { email: email };
@@ -204,12 +204,12 @@ async function run() {
             res.send(result);
         })
 
-        //Get single product(Admin)
+        //Get single order(Admin)
         app.get('/order/:id', verifyJWT, verifyAdmin, async (req, res) => {
             const id = req.params.id
             const query = { _id: ObjectId(id) };
-            const product = await orderCollection.findOne(query);
-            res.send(product);
+            const order = await orderCollection.findOne(query);
+            res.send(order);
         })
 
         // Delete Order (Admin) 
