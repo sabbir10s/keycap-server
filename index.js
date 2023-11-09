@@ -202,7 +202,7 @@ async function run() {
         //=======================
 
         // Get All Order (Admin) 
-        app.get('/admin/order', verifyJWT, verifyAdmin, async (req, res) => {
+        app.get('/order', verifyJWT, verifyAdmin, async (req, res) => {
             const query = {};
             const result = await orderCollection.find(query).toArray();
             res.send(result);
