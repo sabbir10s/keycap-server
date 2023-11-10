@@ -209,7 +209,7 @@ async function run() {
         })
 
         //Get single order by id (Admin, User)
-        app.get('/order/:id', verifyJWT, verifyAdmin, async (req, res) => {
+        app.get('/order/:id', verifyJWT, async (req, res) => {
             const id = req.params.id
             const query = { _id: ObjectId(id) };
             const result = await orderCollection.findOne(query);
