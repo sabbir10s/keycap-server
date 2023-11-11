@@ -179,7 +179,7 @@ async function run() {
             res.send(result);
         })
 
-        // get single order by id (User)
+        // // get single order by id (User)
         // app.get('/order/email/:id', verifyJWT, async (req, res) => {
         //     const id = req.params.id;
         //     const query = { _id: ObjectId(id) };
@@ -265,7 +265,7 @@ async function run() {
 
         app.post('/create-payment-intent', verifyJWT, async (req, res) => {
             const order = req.body;
-            const price = parseInt(order.totalPrice);
+            const price = parseInt(order.totalAmount);
             const amount = price * 100;
             const paymentIntent = await stripe.paymentIntents.create({
                 amount: amount,
@@ -278,17 +278,23 @@ async function run() {
         //Store Payment information 
         app.patch('/order/email/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
+            console.log(id);
             const payment = req.body;
             const filter = { _id: ObjectId(id) }
             const updateDoc = {
                 $set: {
-                    paid: true,
-                    status: 'pending',
-                    transactionId: payment.transactionId
+                    payment: {
+                        status: true,
+                        method: 'card',
+                        transactionId: payment.transactionId
+                    },
+
                 },
             }
+            console.log(updateDoc);
             const result = await paymentCollection.insertOne(payment)
             const updatedOrder = await orderCollection.updateOne(filter, updateDoc);
+
             res.send(updateDoc)
 
         })
