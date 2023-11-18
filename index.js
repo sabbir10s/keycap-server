@@ -43,17 +43,103 @@ async function run() {
         const reviewCollection = client.db('NEXIQ').collection('reviews');
         const paymentCollection = client.db('NEXIQ').collection('payments');
 
-        const verifyAdmin = async (req, res, next) => {
-            const requester = req.decoded.email;
-            const requestAccount = await userCollection.findOne({ email: requester });
+        // Post Token
+        app.post('/jwt', async (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' })
+            res.send({ token })
 
-            if (requestAccount.role === 'admin') {
-                next();
+        })
+
+        // Verify Admin
+        const verifyAdmin = async (req, res, next) => {
+            const email = req.decoded.email
+            const query = { email: email }
+            const user = await userCollection.findOne(query)
+            if (user?.role !== 'admin') {
+                return res.status(403).send({ error: true, message: 'forbidden message' })
             }
-            else {
-                res.send(403).send({ message: 'forbidden access' });
-            }
+            next()
         }
+
+
+        // check admin or not
+        app.get('/user/admin/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email;
+
+            if (req.decoded.email !== email) {
+                return res.send({ admin: false })
+            }
+            const user = await userCollection.findOne({ email: email });
+            const isAdmin = user?.role === 'admin';
+            res.send({ admin: isAdmin });
+        })
+
+
+
+        //=========================
+        //      user section
+        //=========================
+
+        // post user information when logIn
+        app.post('/user', async (req, res) => {
+            const user = req.body
+            const query = { email: user.email }
+            const existingUser = await userCollection.findOne(query)
+            if (existingUser) {
+                return res.send({ message: 'user already exist' })
+            }
+            const result = await userCollection.insertOne(user)
+            res.send(result)
+        })
+
+
+        // update user information
+        app.put('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = req.body;
+            const filter = { email: email };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: user,
+            }
+            const result = await userCollection.updateOne(filter, updateDoc, options);
+            res.send(result);
+        })
+
+        // Make an admin (admin)
+        app.patch('/user/admin/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: { role: 'admin' },
+            }
+            const result = await userCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        })
+
+        // Delete User(admin)
+        app.delete('/user/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await userCollection.deleteOne(query);
+            res.send(result);
+        })
+
+        // Get All users (admin)
+        app.get('/user', verifyJWT, verifyAdmin, async (req, res) => {
+            const users = await userCollection.find().toArray();
+            res.send(users);
+        })
+
+        // Get single user by email
+        app.get('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const filter = { email: email };
+            const user = await userCollection.findOne(filter);
+            res.send(user);
+        })
+
 
 
 
@@ -90,72 +176,6 @@ async function run() {
             const result = await productCollection.deleteOne(query);
             res.send(result);
         })
-
-
-
-        //=========================
-        //      user section
-        //=========================
-
-        // update user information (admin)
-        app.put('/user/:email', async (req, res) => {
-            const email = req.params.email;
-            const user = req.body;
-            const filter = { email: email };
-            const options = { upsert: true };
-            const updateDoc = {
-                $set: user,
-            }
-            const result = await userCollection.updateOne(filter, updateDoc, options);
-            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' })
-            res.send({ result, token });
-        })
-
-        // Get All users (admin)
-        app.get('/user', verifyJWT, verifyAdmin, async (req, res) => {
-            const users = await userCollection.find().toArray();
-            res.send(users);
-        })
-
-        // Get single user by email
-        app.get('/user/:email', async (req, res) => {
-            const email = req.params.email;
-            const filter = { email: email };
-            const user = await userCollection.findOne(filter);
-            res.send(user);
-        })
-
-
-
-        // Make an admin (admin)
-        app.put('/user/admin/:email', verifyJWT, verifyAdmin, async (req, res) => {
-            const email = req.params.email;
-            const filter = { email: email };
-            const updateDoc = {
-                $set: { role: 'admin' },
-            }
-            const result = await userCollection.updateOne(filter, updateDoc);
-            res.send(result);
-        })
-
-
-        // check user admin or not (all)
-        app.get('/admin/:email', verifyJWT, async (req, res) => {
-            const email = req.params.email;
-            const user = await userCollection.findOne({ email: email });
-            const isAdmin = user.role === 'admin';
-            res.send({ admin: isAdmin });
-        })
-
-
-        // Delete User(admin)
-        app.delete('/user/:id', verifyJWT, verifyAdmin, async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: ObjectId(id) };
-            const result = await userCollection.deleteOne(query);
-            res.send(result);
-        })
-
 
 
 
