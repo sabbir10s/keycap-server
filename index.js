@@ -40,7 +40,7 @@ async function run() {
         const productCollection = client.db('NEXIQ').collection('products');
         const userCollection = client.db('NEXIQ').collection('users');
         const taskCollection = client.db('NEXIQ').collection('tasks');
-        const orderCollection = client.db('NEXIQ').collection('orders');
+        const orderCollection = client.db('keycap').collection('orders');
         const reviewCollection = client.db('NEXIQ').collection('reviews');
         const paymentCollection = client.db('NEXIQ').collection('payments');
 
@@ -197,6 +197,19 @@ async function run() {
             const product = req.body;
             const result = await productCollection.insertOne(product);
             res.send(result);
+        })
+
+        // Update product
+
+        app.patch('/product/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: { published: !published },
+            }
+            const result = await productCollection.updateOne(filter, updateDoc);
+            console.log(result);
+            // res.send(result);
         })
 
         // Delete Product
@@ -361,7 +374,7 @@ async function run() {
 run().catch(console.dir);
 
 app.get('/', (req, res) => {
-    res.send("Running the NEXIQ Server");
+    res.send("Running the Keycap Server");
 })
 
 app.listen(port, () => {
