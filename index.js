@@ -37,39 +37,11 @@ async function run() {
 
     try {
         client.connect()
-        const productCollection = client.db('NEXIQ').collection('products');
-        const userCollection = client.db('NEXIQ').collection('users');
-        const taskCollection = client.db('NEXIQ').collection('tasks');
+        const productCollection = client.db('keycap').collection('products');
+        const userCollection = client.db('keycap').collection('users');
         const orderCollection = client.db('keycap').collection('orders');
-        const reviewCollection = client.db('NEXIQ').collection('reviews');
-        const paymentCollection = client.db('NEXIQ').collection('payments');
-
-        //=========================
-        //      Task section
-        //=========================
-
-        // Create Task
-        app.post('/task', async (req, res) => {
-            const product = req.body;
-            const result = await taskCollection.insertOne(product);
-            res.send(result);
-        })
-
-        // Get All Task
-
-        app.get('/task', async (req, res) => {
-            const task = await taskCollection.find().toArray();
-            res.send(task);
-        })
-
-        // Get Single Task
-
-        app.get('/task/:id', async (req, res) => {
-            const id = req.params.id
-            const query = { _id: ObjectId(id) };
-            const task = await taskCollection.findOne(query);
-            res.send(task);
-        })
+        const reviewCollection = client.db('keycap').collection('reviews');
+        const paymentCollection = client.db('keycap').collection('payments');
 
 
 
